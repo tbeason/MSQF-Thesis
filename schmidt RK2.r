@@ -8,17 +8,17 @@ SchmidtRK2 <- function(alpha=1,beta=1,gamma=1,delta=1,d=0.1,rho=0.05,n0=0.4,p0=1
   price[1] <- p0
   U <- function(n,p)
   {
-    U <- alpha*gamma*delta*(2*n-1)/p + beta*(1-p)
+    alpha*gamma*delta*(2*n-1)/p +beta*(1-p)
   }
   
   fn <- function(n,p)
   {
-    fn <- exp(U(n,p))*(1-n) - exp(-1*U(n,p))*n
+    exp(U(n,p))*(1-n) - exp(-1*U(n,p))*n
   }
   
   fp <- function(n)
   {
-    fp <- gamma*(delta*(2*n-1)+d*rnorm(1))+rho*rnorm(1)
+    gamma*(delta*(2*n-1)+d*rnorm(1))+rho*rnorm(1)
   }
   
   util[1] <- U(n0,p0)
@@ -144,6 +144,48 @@ SchmidtRK2.anchor2 <- function(alpha=1,beta=1,gamma=1,delta=1,d=0.1,rho=0.05,n0=
   fp <- function(n)
   {
     fp <- gamma*(delta*(2*n-1)+d*rnorm(1))+rho*rnorm(1)
+  }
+  
+  util[1] <- U(n0,p0)
+  for(i in 2:T)
+  {
+    np <- n_plus[i-1]+ 0.5*dt*fn(n_plus[i-1],price[i-1])
+    pp <- price[i-1] + 0.5*dt*fp(n_plus[i-1])
+    n_plus[i] <- n_plus[i-1] + dt*fn(np,pp)
+    price[i] <- price[i-1] + dt*fp(np)
+    util[i] <- U(n_plus[i],price[i])
+  }
+  t <- seq(0,N,dt)
+  as.matrix(cbind(t,n_plus,price,util))
+}
+#####
+
+##### reworked functions
+SchmidtRK2.glv <- function(alpha=1,beta=1,gamma=1,delta=1,d=0.1,rho=0.05,n0=0.4,p0=1.05,dt=0.01,N=25,poss=0.5){
+  T <- N/dt+1
+  n_plus <- numeric(T)
+  price <- numeric(T)
+  util <- numeric(T)
+  n_plus[1] <- n0
+  price[1] <- p0
+  U <- function(n,p)
+  {
+    alpha*gamma*(2*n-1)/p + beta*(1-p)
+  }
+  
+  fn <- function(n,p)
+  {
+    front <- exp(beta*(1-p))+alpha
+    back <- exp(-beta*(1-p))+alpha
+    dp <- gamma*sign(2*n-1)*abs(2*n-1)
+    de <- front/(front+back)
+    (de-(1-de))*n*(1-n)
+    #(exp(U(n,p)) - exp(-1*U(n,p)))*n*(1-n)
+  }
+  
+  fp <- function(n)
+  {
+    gamma*(2*n-1)
   }
   
   util[1] <- U(n0,p0)
