@@ -12,17 +12,17 @@ kMC <- function(numPlus,numMinus,p0,alpha,beta,gamma,delta,numIt,numTrials,dt)
   
   Util <- function(npl,nmi,pri)
   {
-    alpha*gamma*delta*((npl-nmi)/totNum)/pri+beta*(1.0-pri)
+    alpha*gamma*delta*((npl-nmi)/totNum)/pri+beta*(1-pri)
   }
   
   fnpl <- function(npl,nmi,pri)
   {
-    exp(U(npl,nmi,pri))*nmi/totNum - exp(-U(npl,nmi,pri))*npl/totNum
+    exp(Util(npl,nmi,pri))*nmi/totNum - exp(-Util(npl,nmi,pri))*npl/totNum
   }
   
   fnmi <- function(npl,nmi,pri)
   {
-    exp(-U(npl,nmi,pri))*npl/totNum - exp(U(npl,nmi,pri))*nmi/totNum
+    exp(-Util(npl,nmi,pri))*npl/totNum - exp(Util(npl,nmi,pri))*nmi/totNum
   }
   
   fp <- function(npl,nmi)
@@ -39,17 +39,19 @@ kMC <- function(numPlus,numMinus,p0,alpha,beta,gamma,delta,numIt,numTrials,dt)
       p <- price[i-1]
       
       rand <- runif(nm,0,1)
-      numChange <- length(rand[rand <= exp(Util(np.nm,p))*dt])
+      numChange <- length(rand[rand <= exp(Util(np,nm,p))*dt])
       np <- np + numChange
       nm <- nm - numChange
       
       rand2 <- runif(np,0,1)
-      numChange2 <- length(rand2[rand2 <= exp(-Util(np.nm,p))*dt])
+      numChange2 <- length(rand2[rand2 <= exp(-Util(np,nm,p))*dt])
       np <- np - numChange2
       nm <- nm + numChange2
       
       
       price[i] <- p + dt*fp(np,nm)+(dt^2)*gamma*delta*0.5*(fnpl(np,nm,p)-fnmi(np,nm,p))
+      nplus[i] <- np
+      nminus[i] <- nm
     }
     nout <- nout + nplus
     pout <- pout + price
