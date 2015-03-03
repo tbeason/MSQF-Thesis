@@ -1,4 +1,4 @@
-kMC <- function(numPlus,numMinus,p0,alpha,beta,gamma,delta,numIt,numTrials)
+kMC <- function(numPlus,numMinus,p0,alpha,beta,gamma,delta,numIt,numTrials,dt)
 {
   totNum <- numPlus+numMinus
   nplus <- numeric(numIt)
