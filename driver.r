@@ -44,12 +44,15 @@ source('~/GitHub/MSQF-Thesis/LuxGrid.r')
 # plot(modelg[,1],modelg[,2]-0.5,type="l",col="blue",ylab="Excess Demand",xlab="")
 # plot(modelg[,1],modelg[,4],type="l",col="red",ylab="Utility",xlab="")
 
-kmc <- kMC(4000,6000,p0=1.05,alpha=1,beta=1,gamma=1,delta=1,numIt=1000,numTrials=25,dt=0.05)
-#matplot(kmc[[1]])
-#matplot(kmc[[2]])
+kmc <- kMC(4000,6000,p0=1.05,alpha=1,beta=1,gamma=1,delta=1,numIt=1000,numTrials=1,dt=0.05)
 plot(kmc[[1]],type="l",main="Price")
 plot(kmc[[2]],type="l",main="Buyers")
 
+
+
+cpt <- CPT1(4000,6000,p0=1.05,alpha=1,beta=1,gamma=1,delta=1,numIt=1000,numTrials=1,dt=0.05,stdv=0.25)
+plot(kmc[[1]],type="l",main="Price")
+plot(kmc[[2]],type="l",main="Buyers")
 # require(reshape2)
 # require(ggplot2)
 # gr <- LuxGrid(L=100,maxit=100000,n0=0.7,p0=105,pf=100,alpha=1,beta=1,gamma=0.1)
