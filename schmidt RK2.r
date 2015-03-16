@@ -1,5 +1,5 @@
 ##### normal functionality as found in the Schmidt papers
-SchmidtRK2 <- function(alpha=1,beta=1,gamma=1,delta=1,d=0.1,rho=0.05,n0=0.4,p0=1.05,dt=0.01,N=25){
+SchmidtRK2 <- function(alpha=1,beta=1,gamma=1,delta=1,d=0.1,rho=0.05,n0=0.4,p0=1.05,dt=0.01,N=25,pf=1){
   T <- N/dt+1
   n_plus <- numeric(T)
   price <- numeric(T)
@@ -8,7 +8,7 @@ SchmidtRK2 <- function(alpha=1,beta=1,gamma=1,delta=1,d=0.1,rho=0.05,n0=0.4,p0=1
   price[1] <- p0
   U <- function(n,p)
   {
-    alpha*gamma*delta*(2*n-1)/p +beta*(1-p)
+    alpha*gamma*delta*(2*n-1) +beta*(pf-p)
   }
   
   fn <- function(n,p)

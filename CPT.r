@@ -1,4 +1,4 @@
-CPT1 <- function(numPlus,numMinus,p0,alpha,beta,gamma,delta,numIt,numTrials,dt,stdv,pf=10)
+CPT1 <- function(numPlus,numMinus,p0,alpha,beta,gamma,delta,numIt,numTrials,dt,conf=0.5,pf=10)
 {
   totNum <- numPlus+numMinus
   nplus <- numeric(numIt)
@@ -14,7 +14,7 @@ CPT1 <- function(numPlus,numMinus,p0,alpha,beta,gamma,delta,numIt,numTrials,dt,s
   {
     wp <- function(x)
     {
-      cpf <- pnorm(x,mean=(pf-pri)/pri,sd=stdv)
+      cpf <- conf
       if(x>=0)
       {
         pow <- 0.61
@@ -40,7 +40,7 @@ CPT1 <- function(numPlus,numMinus,p0,alpha,beta,gamma,delta,numIt,numTrials,dt,s
       result
     }
     
-    ret <- rnorm(1000,mean=(pf-pri)/pri,sd=stdv)
+    ret <- pf-pri
     weightedProb <- vapply(ret,wp,numeric(1))
 #     normalizedProb <- weightedProb/sum(weightedProb)
     values <- vapply(ret,valFun,numeric(1))
@@ -93,7 +93,75 @@ CPT1 <- function(numPlus,numMinus,p0,alpha,beta,gamma,delta,numIt,numTrials,dt,s
 }
 
 
-
+CPTRK2 <- function(alpha=1,beta=1,gamma=1,delta=1,d=0,rho=0,n0=0.4,p0=1.05,dt=0.01,N=25,Tconf=0.5,Fconf=0.5,pf){
+  T <- N/dt+1
+  n_plus <- numeric(T)
+  price <- numeric(T)
+  utility <- numeric(T)
+  n_plus[1] <- n0
+  price[1] <- p0
+  Util <- function(n,pri)
+  {
+    wp <- function(x,conf)
+    {
+      cpf <- conf
+      if(x>=0)
+      {
+        pow <- 0.61
+      }
+      else
+      {
+        pow <- 0.69
+      }
+      
+      (cpf^pow)/((cpf^pow+(1-cpf)^pow)^(1/pow))
+    }
+    
+    valFun <- function(x)
+    {
+      if(x>=0)
+      {
+        result <- x^0.88
+      }
+      else
+      {
+        result <- -2.25*(-x)^0.88
+      }
+      result
+    }
+    
+    retF <- (pf-pri)
+    wpF <- wp(retF,Fconf)
+    valueF <- valFun(retF)
+    
+    retT <- gamma*delta*(2*n-1)
+    wpT <- wp(retT,Tconf)
+    valueT <- valFun(retT)
+    alpha*wpT*valueT + beta*wpF*valueF #return
+  }
+  
+  fn <- function(n,p)
+  {
+    exp(Util(n,p))*(1-n) - exp(-1*Util(n,p))*n
+  }
+  
+  fp <- function(n)
+  {
+    gamma*(delta*(2*n-1)+d*rnorm(1))+rho*rnorm(1)
+  }
+  
+  utility[1] <- Util(n0,p0)
+  for(i in 2:T)
+  {
+    np <- n_plus[i-1]+ 0.5*dt*fn(n_plus[i-1],price[i-1])
+    pp <- price[i-1] + 0.5*dt*fp(n_plus[i-1])
+    n_plus[i] <- n_plus[i-1] + dt*fn(np,pp)
+    price[i] <- price[i-1] + dt*fp(np)
+    utility[i] <- Util(n_plus[i],price[i])
+  }
+  t <- seq(0,N,dt)
+  as.matrix(cbind(t,n_plus,price,utility))
+}
 
 
 # ret <- rnorm(1000,0,0.4)
