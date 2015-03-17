@@ -1,4 +1,4 @@
-CPT1 <- function(numPlus,numMinus,p0,alpha,beta,gamma,delta,numIt,numTrials,dt,conf=0.5,pf=10)
+CPTkMC <- function(numPlus,numMinus,p0,alpha,beta,gamma,delta,numIt,numTrials,dt,conf=0.5,pf=10,Tconf=1,Fconf=1)
 {
   totNum <- numPlus+numMinus
   nplus <- numeric(numIt)
@@ -10,9 +10,9 @@ CPT1 <- function(numPlus,numMinus,p0,alpha,beta,gamma,delta,numIt,numTrials,dt,c
   nminus[1] <- numMinus
   price[1] <- p0
   
-  Util <- function(pri)
+  Util <- function(npl,nmi,pri)
   {
-    wp <- function(x)
+    wp <- function(x,conf)
     {
       cpf <- conf
       if(x>=0)
@@ -40,21 +40,24 @@ CPT1 <- function(numPlus,numMinus,p0,alpha,beta,gamma,delta,numIt,numTrials,dt,c
       result
     }
     
-    ret <- pf-pri
-    weightedProb <- vapply(ret,wp,numeric(1))
-#     normalizedProb <- weightedProb/sum(weightedProb)
-    values <- vapply(ret,valFun,numeric(1))
-    beta*sum(weightedProb*values)
+    retF <- (pf-pri)
+    wpF <- wp(retF,Fconf)
+    valueF <- valFun(retF)
+    
+    retT <- gamma*delta*((npl-nmi)/totNum)
+    wpT <- wp(retT,Tconf)
+    valueT <- valFun(retT)
+    alpha*wpT*valueT + beta*wpF*valueF #return
   }
   
   fnpl <- function(npl,nmi,pri)
   {
-    exp(Util(pri))*nmi/totNum - exp(-Util(pri))*npl/totNum
+    exp(Util(npl,nmi,pri))*nmi/totNum - exp(-Util(npl,nmi,pri))*npl/totNum
   }
   
   fnmi <- function(npl,nmi,pri)
   {
-    exp(-Util(pri))*npl/totNum - exp(Util(pri))*nmi/totNum
+    exp(-Util(npl,nmi,pri))*npl/totNum - exp(Util(npl,nmi,pri))*nmi/totNum
   }
   
   fp <- function(npl,nmi)
@@ -71,12 +74,12 @@ CPT1 <- function(numPlus,numMinus,p0,alpha,beta,gamma,delta,numIt,numTrials,dt,c
       p <- price[i-1]
 #       print(p)
       rand <- runif(nm,0,1)
-      numChange <- length(rand[rand <= exp(Util(p))*dt])
+      numChange <- length(rand[rand <= exp(Util(np,nm,p))*dt])
       np <- np + numChange
       nm <- nm - numChange
       
       rand2 <- runif(np,0,1)
-      numChange2 <- length(rand2[rand2 <= exp(-Util(p))*dt])
+      numChange2 <- length(rand2[rand2 <= exp(-Util(np,nm,p))*dt])
       np <- np - numChange2
       nm <- nm + numChange2
       
