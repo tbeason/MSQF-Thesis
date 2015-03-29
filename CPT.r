@@ -14,37 +14,39 @@ CPTkMC <- function(numPlus,numMinus,p0,alpha,beta,gamma,delta,numIt,numTrials,dt
   {
     wp <- function(x,conf)
     {
-      cpf <- conf
-      if(x>=0)
-      {
-        pow <- 0.61
-      }
-      else
-      {
-        pow <- 0.69
-      }
-      
-      (cpf^pow)/((cpf^pow+(1-cpf)^pow)^(1/pow))
+      1
+#       cpf <- conf
+#       if(x>=0)
+#       {
+#         pow <- 0.61
+#       }
+#       else
+#       {
+#         pow <- 0.69
+#       }
+#       
+#       (cpf^pow)/((cpf^pow+(1-cpf)^pow)^(1/pow))
     }
     
     valFun <- function(x)
     {
-      if(x>=0)
-      {
-        result <- x^0.88
-      }
-      else
-      {
-        result <- -2.25*(-x)^0.88
-      }
-      result
+      x
+#       if(x>=0)
+#       {
+#         result <- x^0.88
+#       }
+#       else
+#       {
+#         result <- -2.25*(-x)^0.88
+#       }
+#       result
     }
     
-    retF <- (pf-pri)
+    retF <- (pf-pri)/pri
     wpF <- wp(retF,Fconf)
     valueF <- valFun(retF)
     
-    retT <- gamma*delta*((npl-nmi)/totNum)
+    retT <- gamma*delta*((npl-nmi)/totNum)/pri
     wpT <- wp(retT,Tconf)
     valueT <- valFun(retT)
     alpha*wpT*valueT + beta*wpF*valueF #return
@@ -133,11 +135,11 @@ CPTRK2 <- function(alpha=1,beta=1,gamma=1,delta=1,d=0,rho=0,n0=0.4,p0=1.05,dt=0.
       result
     }
     
-    retF <- (pf-pri)
+    retF <- (pf-pri)/pri
     wpF <- wp(retF,Fconf)
     valueF <- valFun(retF)
     
-    retT <- gamma*delta*(2*n-1)
+    retT <- gamma*delta*(2*n-1)/pri
     wpT <- wp(retT,Tconf)
     valueT <- valFun(retT)
     alpha*wpT*valueT + beta*wpF*valueF #return

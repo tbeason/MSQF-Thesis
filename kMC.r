@@ -1,4 +1,4 @@
-kMC <- function(numPlus,numMinus,p0,alpha,beta,gamma,delta,numIt,numTrials,dt)
+kMC <- function(numPlus,numMinus,p0,alpha1,alpha2,beta,gamma,delta,vega,numIt,numTrials,dt,pf,Tf,r)
 {
   totNum <- numPlus+numMinus
   nplus <- numeric(numIt)
@@ -10,19 +10,35 @@ kMC <- function(numPlus,numMinus,p0,alpha,beta,gamma,delta,numIt,numTrials,dt)
   nminus[1] <- numMinus
   price[1] <- p0
   
-  Util <- function(npl,nmi,pri)
+  Util <- function(npl,nmi,pri,t)
   {
-    alpha*gamma*delta*((npl-nmi)/totNum)/pri+beta*(1-pri)
+    if(t*dt <= Tf*dt)
+    {
+      L <- exp(-r*(Tf-t)*dt)
+    }
+    else
+    {
+      L <- 1
+    }
+    if(t > 2)
+    {
+      pChange <- price[t-1] - price[t-2]
+    }
+    else
+    {
+      pChange <- 0
+    }
+    alpha1*((npl-nmi)/totNum)+alpha2*pChange+beta*(1/vega)*L*(pf-pri)
   }
   
-  fnpl <- function(npl,nmi,pri)
+  fnpl <- function(npl,nmi,pri,t)
   {
-    exp(Util(npl,nmi,pri))*nmi/totNum - exp(-Util(npl,nmi,pri))*npl/totNum
+    vega*exp(Util(npl,nmi,pri,t))*nmi/totNum - vega*exp(-Util(npl,nmi,pri,t))*npl/totNum
   }
   
-  fnmi <- function(npl,nmi,pri)
+  fnmi <- function(npl,nmi,pri,t)
   {
-    exp(-Util(npl,nmi,pri))*npl/totNum - exp(Util(npl,nmi,pri))*nmi/totNum
+    vega*exp(-Util(npl,nmi,pri,t))*npl/totNum - vega*exp(Util(npl,nmi,pri,t))*nmi/totNum
   }
   
   fp <- function(npl,nmi)
@@ -39,17 +55,17 @@ kMC <- function(numPlus,numMinus,p0,alpha,beta,gamma,delta,numIt,numTrials,dt)
       p <- price[i-1]
       
       rand <- runif(nm,0,1)
-      numChange <- length(rand[rand <= exp(Util(np,nm,p))*dt])
+      numChange <- length(rand[rand <= vega*exp(Util(np,nm,p,i))*dt])
       np <- np + numChange
       nm <- nm - numChange
       
       rand2 <- runif(np,0,1)
-      numChange2 <- length(rand2[rand2 <= exp(-Util(np,nm,p))*dt])
+      numChange2 <- length(rand2[rand2 <= vega*exp(-Util(np,nm,p,i))*dt])
       np <- np - numChange2
       nm <- nm + numChange2
       
       
-      price[i] <- p + dt*fp(np,nm)+(dt^2)*gamma*delta*0.5*(fnpl(np,nm,p)-fnmi(np,nm,p))
+      price[i] <- p + dt*fp(np,nm)+(dt^2)*gamma*delta*0.5*(fnpl(np,nm,p,i)-fnmi(np,nm,p,i))
       nplus[i] <- np
       nminus[i] <- nm
     }
