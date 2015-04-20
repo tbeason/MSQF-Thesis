@@ -26,7 +26,7 @@ RK2.me <- function(alpha1=1,alpha2=1,beta=1,gamma=1,delta=1,nu=1,d=0,rho=0,n0=0.
       pChange <- 0
     }
     
-    alpha1*(2*n-1) + alpha2*pChange + beta*(1/nu)*L*(pf-p)
+    alpha1*(2*n-1) + alpha2*(pChange/p) + beta*(1/nu)*L*((pf-p)/p)
   }
   
   fn <- function(n,p,t)
@@ -49,7 +49,8 @@ RK2.me <- function(alpha1=1,alpha2=1,beta=1,gamma=1,delta=1,nu=1,d=0,rho=0,n0=0.
     util[i] <- U(n_plus[i],price[i],i)
   }
   t <- seq(0,N,dt)
-  as.matrix(cbind(t,n_plus,price,util))
+  #as.matrix(cbind(t,n_plus,price,util))
+  price
 }
 #####
 
